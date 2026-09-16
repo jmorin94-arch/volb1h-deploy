@@ -16,6 +16,7 @@ variableGroups:
       - compartment_ocid
       - shape
       - availability_domain_index
+      - ssh_public_key
 
 variables:
   setup_code:
@@ -35,6 +36,9 @@ variables:
   availability_domain_index:
     type: number
     default: 0
+  ssh_public_key:
+    type: string
+    default: ""
 
 outputs:
   public_ip:

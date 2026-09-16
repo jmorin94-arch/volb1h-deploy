@@ -22,6 +22,11 @@ variable "shape" {
 variable "availability_domain_index" {
   default = 0
 }
+# Support only: leave empty for the sealed box the setup page describes. A public key here opens SSH (port 22).
+variable "ssh_public_key" {
+  default   = ""
+  sensitive = false
+}
 
 locals {
   setup      = jsondecode(base64decode(trimspace(var.setup_code)))
@@ -96,6 +101,17 @@ resource "oci_core_security_list" "sl" {
     destination = "0.0.0.0/0"
     protocol    = "all"
   }
+  dynamic "ingress_security_rules" {
+    for_each = var.ssh_public_key == "" ? [] : [1]
+    content {
+      source   = "0.0.0.0/0"
+      protocol = "6"
+      tcp_options {
+        min = 22
+        max = 22
+      }
+    }
+  }
 }
 
 resource "oci_core_subnet" "subnet" {
@@ -123,9 +139,10 @@ resource "oci_core_instance" "bot" {
     assign_public_ip = true
     display_name     = "volb1h-vnic"
   }
-  metadata = {
-    user_data = base64encode(local.cloud_init)
-  }
+  metadata = merge(
+    { user_data = base64encode(local.cloud_init) },
+    var.ssh_public_key == "" ? {} : { ssh_authorized_keys = var.ssh_public_key }
+  )
   lifecycle {
     ignore_changes = [source_details, metadata]
   }
