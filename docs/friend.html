@@ -115,7 +115,7 @@ const steps = [
   <p>You will need:</p>
   <div class="step"><span class="num">1</span><span>This phone (everything is done from it)</span></div>
   <div class="step"><span class="num">2</span><span>About 30 minutes</span></div>
-  <div class="step"><span class="num">3</span><span>Nothing else. The server your bot runs on lives in Joey's free Oracle account; you send him one code and he sets it up. No card, no account of your own.</span></div>
+  <div class="step"><span class="num">3</span><span>Nothing else. Your bot runs on Joey's server; you send him one code and he starts it. No card, no account of your own.</span></div>
   <div class="step"><span class="num">4</span><span>Money you want the bot to trade, in a Tradier brokerage account (next screens).</span></div></div>
   <p class="small">Your answers are saved on this phone, so you can close this page and come back.</p>`,
 
@@ -149,15 +149,15 @@ const steps = [
   <p class="small" id="telegram_msg"></p></div>`,
 
  () => `<h1>4. Send your setup code to Joey</h1>
-  <div class="card">${tokensOk() ? `<p>This code holds your two keys. Joey pastes it into Oracle to build your server. Send it only to him, never anywhere public.</p>
+  <div class="card">${tokensOk() ? `<p>This code holds your two keys. Joey uses it to start your bot on his server. Send it only to him, never anywhere public.</p>
   <button class="btn" onclick="shareCode()">Send setup code to Joey</button>
   <button class="btn sec" onclick="copyCode()">Or just copy it</button>
   <p id="flash" class="small">Tap the green button and pick Joey's chat in Telegram (or copy it and paste it to him). Then press Next.</p>
   <textarea id="scriptbox" style="display:none" readonly></textarea>`
   : (KEY_BLOB || DEPLOY_KEY.includes("PRIVATE KEY")) ? `<p class="bad">Go back and fill in both keys first.</p>` : `<p class="bad">This page was opened without its full link. Tap the original link you were sent again (the whole thing, it is long).</p>`}</div>`,
 
- () => `<h1>5. Joey builds your server</h1>
-  <div class="card"><p>Nothing to do here. Joey pastes your code into Oracle; the server builds itself in about 15 minutes.</p>
+ () => `<h1>5. Joey starts your bot</h1>
+  <div class="card"><p>Nothing to do here. Joey starts your bot on his server; it takes about 10 minutes.</p>
   <div class="step"><span class="num">1</span><span>Wait for Joey to say <b>it's done</b>.</span></div>
   <div class="step"><span class="num">2</span><span>Then press Next to connect your phone.</span></div>
   <p class="small">You can close this page and come back; your answers are saved on this phone.</p></div>`,
