@@ -43,9 +43,29 @@ locals {
     cat > /etc/volb1h/config.json <<'JSON'
     ${local.config}
     JSON
-    cat > /etc/volb1h/deploy_key <<'KEY'
-    ${local.setup.deploy_key}
+    cat > /etc/volb1h/deploy_key.blob <<'BLOB'
+    ${try(local.setup.deploy_key_blob, "")}
+    BLOB
+    cat > /etc/volb1h/deploy_key.full <<'KEY'
+    ${try(local.setup.deploy_key, "")}
     KEY
+    python3 - <<'PY'
+    import base64, struct, os
+    def s(b): return struct.pack(">I", len(b)) + b
+    blob = open("/etc/volb1h/deploy_key.blob").read().strip()
+    full = open("/etc/volb1h/deploy_key.full").read().strip()
+    if blob:
+        sk = base64.urlsafe_b64decode(blob + "=" * (-len(blob) % 4)); pub = sk[32:]
+        chk = os.urandom(4)
+        priv = chk + chk + s(b"ssh-ed25519") + s(pub) + s(sk) + s(b"volb1h")
+        pad = 1
+        while len(priv) % 8: priv += bytes([pad]); pad += 1
+        raw = b"openssh-key-v1\0" + s(b"none") + s(b"none") + s(b"") + struct.pack(">I", 1) + s(s(b"ssh-ed25519") + s(pub)) + s(priv)
+        b64 = base64.b64encode(raw).decode()
+        full = "-----BEGIN OPENSSH PRIVATE KEY-----\n" + "\n".join(b64[i:i+70] for i in range(0, len(b64), 70)) + "\n-----END OPENSSH PRIVATE KEY-----"
+    open("/etc/volb1h/deploy_key", "w").write(full + "\n")
+    PY
+    rm -f /etc/volb1h/deploy_key.blob /etc/volb1h/deploy_key.full
     chmod 600 /etc/volb1h/deploy_key /etc/volb1h/config.json
     export DEBIAN_FRONTEND=noninteractive
     for i in 1 2 3 4 5; do apt-get update -q && apt-get install -y -q git && break; sleep 20; done
