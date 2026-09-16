@@ -1,0 +1,45 @@
+title: "VOLB1H trading bot"
+description: "Creates one Always Free server that runs your VOLB1H bot. Paste the setup code from your setup page."
+schemaVersion: 1.1.0
+version: "20260916"
+locale: "en"
+
+variableGroups:
+  - title: "Your setup code"
+    variables:
+      - setup_code
+  - title: "Hidden"
+    visible: false
+    variables:
+      - tenancy_ocid
+      - region
+      - compartment_ocid
+      - shape
+      - availability_domain_index
+
+variables:
+  setup_code:
+    type: password
+    title: "Setup code"
+    description: "The long code you copied from your VOLB1H setup page (step 4). Paste the whole thing."
+    required: true
+  tenancy_ocid:
+    type: string
+  region:
+    type: string
+  compartment_ocid:
+    type: oci:identity:compartment:id
+  shape:
+    type: string
+    default: "VM.Standard.E2.1.Micro"
+  availability_domain_index:
+    type: number
+    default: 0
+
+outputs:
+  public_ip:
+    type: string
+    title: "Server address"
+  next_step:
+    type: string
+    title: "Next"
