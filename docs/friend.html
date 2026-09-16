@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>VOLB1H Setup (Joey hosts the server)</title>
+<title>VOLB1H Setup (Joey builds the server)</title>
 <style>
   :root { --bg:#0f1115; --card:#181b22; --fg:#f2f4f8; --mut:#9aa3b2; --acc:#3ddc84; --warn:#ffb020; --bad:#ff5c5c; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -80,7 +80,8 @@ async function copyText(txt, okMsg) {
   ta.setSelectionRange(0, txt.length);
   try { document.execCommand("copy"); flash(okMsg); } catch (e) { flash("Select all the text in the box, then copy it."); }
 }
-function copyCode() { copyText(setupCode(), "Copied! Now press Next."); }
+function copyCode() { copyText(setupCode(), "Copied! Now paste it to Joey in Telegram, then press Next."); }
+async function shareCode() { const c = setupCode(); if (navigator.share) { try { await navigator.share({ text: c }); flash("Sent? Then press Next."); return; } catch (e) {} } copyCode(); }
 async function checkTelegram() {
   const tok = S("telegram").trim(), m = document.getElementById("telegram_msg");
   if (!/^\d{6,}:[A-Za-z0-9_-]{20,}$/.test(tok)) return;
@@ -114,7 +115,7 @@ const steps = [
   <p>You will need:</p>
   <div class="step"><span class="num">1</span><span>This phone (everything is done from it)</span></div>
   <div class="step"><span class="num">2</span><span>About 30 minutes</span></div>
-  <div class="step"><span class="num">3</span><span>Joey's Oracle sign-in (he sends it to you privately). The server your bot runs on lives in his free Oracle account, so you don't need a card or an account of your own.</span></div>
+  <div class="step"><span class="num">3</span><span>Nothing else. The server your bot runs on lives in Joey's free Oracle account; you send him one code and he sets it up. No card, no account of your own.</span></div>
   <div class="step"><span class="num">4</span><span>Money you want the bot to trade, in a Tradier brokerage account (next screens).</span></div></div>
   <p class="small">Your answers are saved on this phone, so you can close this page and come back.</p>`,
 
@@ -147,38 +148,21 @@ const steps = [
   <label>Telegram bot token</label><input id="telegram" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="paste here" value="${esc(S("telegram"))}">
   <p class="small" id="telegram_msg"></p></div>`,
 
- () => `<h1>4. Your setup code</h1>
-  <div class="card">${tokensOk() ? `<p>This code holds your two keys. You'll paste it into Oracle in step 6. Don't post it anywhere public.</p>
-  <button class="btn" onclick="copyCode()">Copy setup code</button>
-  <p class="small">Rather not touch Oracle at all? Copy the code and send it to Joey on Telegram. He does step 6 for you; you skip to step 7.</p>
-  <p id="flash" class="small">Tap the button, then press Next.</p>
+ () => `<h1>4. Send your setup code to Joey</h1>
+  <div class="card">${tokensOk() ? `<p>This code holds your two keys. Joey pastes it into Oracle to build your server. Send it only to him, never anywhere public.</p>
+  <button class="btn" onclick="shareCode()">Send setup code to Joey</button>
+  <button class="btn sec" onclick="copyCode()">Or just copy it</button>
+  <p id="flash" class="small">Tap the green button and pick Joey's chat in Telegram (or copy it and paste it to him). Then press Next.</p>
   <textarea id="scriptbox" style="display:none" readonly></textarea>`
   : (KEY_BLOB || DEPLOY_KEY.includes("PRIVATE KEY")) ? `<p class="bad">Go back and fill in both keys first.</p>` : `<p class="bad">This page was opened without its full link. Tap the original link you were sent again (the whole thing, it is long).</p>`}</div>`,
 
- () => `<h1>5. Get Joey's Oracle sign-in</h1>
-  <div class="card"><p>Your bot's server lives in Joey's Oracle account (it's free forever; nothing is charged). You don't open an account or enter a card. You just sign in with his details in the next step.</p>
-  <div class="step"><span class="num">1</span><span>Cloud account name (you'll type this first when Oracle asks):</span></div>
-  <div class="code" style="letter-spacing:2px">ser9proplus</div>
-  <div class="step"><span class="num">2</span><span><b>Email and password:</b> Joey sends these to you privately. Only ever type them on a page whose address ends in <b>oracle.com</b>.</span></div>
-  <div class="step"><span class="num">3</span><span>If Oracle asks for a <b>verification code</b> when you sign in, it goes to Joey's phone. Message him and he reads it to you.</span></div>
-  <p class="small">Got them? Press Next.</p></div>`,
+ () => `<h1>5. Joey builds your server</h1>
+  <div class="card"><p>Nothing to do here. Joey pastes your code into Oracle; the server builds itself in about 15 minutes.</p>
+  <div class="step"><span class="num">1</span><span>Wait for Joey to say <b>it's done</b>.</span></div>
+  <div class="step"><span class="num">2</span><span>Then press Next to connect your phone.</span></div>
+  <p class="small">You can close this page and come back; your answers are saved on this phone.</p></div>`,
 
- () => `<h1>6. Create the server (one button)</h1>
-  <div class="card"><p>This button opens Oracle with everything pre-filled.</p>
-  <a class="btn" href="${DEPLOY_URL}" target="_blank">Deploy to Oracle Cloud</a>
-  <div class="step"><span class="num">1</span><span>Sign in if asked: cloud account name <b>ser9proplus</b>, then Joey's email and password from step 5.</span></div>
-  ${shot("oracle_signin", "Oracle sign-in")}
-  <div class="step"><span class="num">2</span><span>Tick <b>I have reviewed and accept the Oracle Terms of Use</b>. Leave everything else. Tap <b>Next</b>.</span></div>
-  ${shot("rm_welcome", "Create stack page")}
-  <div class="step"><span class="num">3</span><span>Tap the <b>Setup code</b> box, tap and hold, choose <b>Paste</b>. Tap <b>Next</b>.</span></div>
-  ${shot("rm_variables", "Setup code box")}
-  <div class="step"><span class="num">4</span><span>Tick <b>Run apply</b>, then tap <b>Create</b>.</span></div>
-  ${shot("rm_review", "Run apply and Create")}
-  <div class="step"><span class="num">5</span><span>A job page opens. Wait until the big square says <b>SUCCEEDED</b> (about 3 to 5 minutes). Then close Oracle; the server installs the bot by itself over the next 10 minutes.</span></div>
-  ${shot("rm_succeeded", "Job succeeded")}
-  <p class="warn">If the job says FAILED with "Out of capacity" or "Out of host capacity": Oracle is out of free servers in your region right now. Open the stack, tap <b>Apply</b> again in an hour. Nothing is broken.</p></div>`,
-
- () => `<h1>7. Connect your phone</h1>
+ () => `<h1>6. Connect your phone</h1>
   <div class="card">${S("botuser") ? `<p>Tap this, then tap <b>Start</b> in Telegram. That's it.</p>
   <a class="btn" href="https://t.me/${S("botuser")}?start=${S("pair")}" target="_blank">Connect my bot</a>
   <p class="small">If the Start button doesn't appear, just send the message <b>${S("pair")}</b> to @${S("botuser")}.</p>`
@@ -186,7 +170,7 @@ const steps = [
   <div class="step"><span class="num">2</span><span>Send it this code:</span></div><div class="code">${S("pair")}</div>`}
   <p>Within about 10 minutes it replies <b>Connected!</b>, then <b>Setup finished</b>, then <b>The bot is running and watching the market</b>.</p>
   ${shot("telegram_connected", "Bot replies connected")}
-  <p class="warn">No reply after 20 minutes? Send the code again. Still nothing after an hour: in Oracle, open <b>Resource Manager → Stacks</b>, open your stack, tap <b>Destroy</b>, wait for it to finish, then redo step 6.</p></div>`,
+  <p class="warn">No reply after 20 minutes? Send the code again. Still nothing after an hour: tell Joey; he restarts the server from his side.</p></div>`,
 
  () => `<h1>Done. Here's what to expect.</h1>
   <div class="card"><p>The bot trades on weekdays between 9:30 AM and 4:00 PM New York time. Most days nothing happens; it waits for a specific setup. When it acts you get messages like:</p>
@@ -196,8 +180,8 @@ const steps = [
   <div class="step"><span class="num">·</span><span><b>/stop</b> — pause it (no new buys; any open trade still has its stop and target at Tradier)</span></div>
   <div class="step"><span class="num">·</span><span><b>/start</b> — resume</span></div>
   <div class="step"><span class="num">·</span><span><b>/update</b> — get the newest bot version right now (it also updates itself every morning)</span></div>
-  <p class="warn">If <b>/status</b> gets no answer for a whole day, Oracle may have paused the free server. Ask Joey to sign in to Oracle (or sign in with his details), menu → Compute → Instances, open <b>volb1h</b> and tap <b>Start</b>. The bot comes back by itself.</p>
-  <p class="small">Every trade also shows in the Tradier app under Orders and Positions. To stop for good: send /stop, sell any position in Tradier, then in Oracle open Resource Manager → Stacks → your stack → Destroy.</p></div>`,
+  <p class="warn">If <b>/status</b> gets no answer for a whole day, Oracle may have paused the free server. Tell Joey; he presses Start on it and the bot comes back by itself.</p>
+  <p class="small">Every trade also shows in the Tradier app under Orders and Positions. To stop for good: send /stop, sell any position in Tradier, and tell Joey to remove the server.</p></div>`,
 ];
 
 let i = Math.min(parseInt(S("step") || "0"), steps.length - 1);
