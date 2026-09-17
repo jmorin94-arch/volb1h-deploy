@@ -201,9 +201,15 @@ const steps = [
   <p class="small">Every trade also shows in the Tradier app under Orders and Positions. To stop for good: send /stop, sell any position in Tradier, and tell Joey to remove the server.</p></div>`,
 ];
 
-let i = Math.min(parseInt(S("step") || "0"), steps.length - 1);
+let i = Math.min(parseInt(S("fstep") || "0"), steps.length - 1);
+function startOver() {
+  if (!confirm("Start over? This clears what you typed on this page.")) return;
+  for (const k of ["fstep", "tradier", "telegram", "botuser", "pair"]) { try { localStorage.removeItem("volb1h_" + k); } catch (e) {} }
+  W("pair", String(1000 + Math.floor(Math.random() * 9000)));
+  i = 0; render();
+}
 function render() {
-  document.getElementById("app").innerHTML = `<div class="prog">Step ${i + 1} of ${steps.length}</div>` + steps[i]();
+  document.getElementById("app").innerHTML = `<div class="prog">Step ${i + 1} of ${steps.length}${i > 0 ? ` · <a href="#" onclick="startOver();return false">Start over</a>` : ""}</div>` + steps[i]();
   document.getElementById("back").style.visibility = i === 0 ? "hidden" : "visible";
   document.getElementById("next").textContent = i === steps.length - 1 ? "Finish" : "Next";
   for (const k of ["tradier", "telegram"]) {
@@ -221,8 +227,8 @@ function check(k) {
   const ok = k === "tradier" ? v.length >= 20 && !/\s/.test(v) : /^\d{6,}:[A-Za-z0-9_-]{20,}$/.test(v);
   m.innerHTML = ok ? '<span class="ok">Looks right ✓</span>' : '<span class="bad">That doesn\'t look like the right code. Copy it again.</span>';
 }
-document.getElementById("next").onclick = () => { if (i < steps.length - 1) { i++; W("step", i); render(); } };
-document.getElementById("back").onclick = () => { if (i > 0) { i--; W("step", i); render(); } };
+document.getElementById("next").onclick = () => { if (i < steps.length - 1) { i++; W("fstep", i); render(); } };
+document.getElementById("back").onclick = () => { if (i > 0) { i--; W("fstep", i); render(); } };
 render();
 </script>
 </body>

@@ -219,8 +219,14 @@ const steps = [
 ];
 
 let i = Math.min(parseInt(S("step") || "0"), steps.length - 1);
+function startOver() {
+  if (!confirm("Start over? This clears what you typed on this page.")) return;
+  for (const k of ["step", "tradier", "telegram", "botuser", "pair"]) { try { localStorage.removeItem("volb1h_" + k); } catch (e) {} }
+  W("pair", String(1000 + Math.floor(Math.random() * 9000)));
+  i = 0; render();
+}
 function render() {
-  document.getElementById("app").innerHTML = `<div class="prog">Step ${i + 1} of ${steps.length}</div>` + steps[i]();
+  document.getElementById("app").innerHTML = `<div class="prog">Step ${i + 1} of ${steps.length}${i > 0 ? ` · <a href="#" onclick="startOver();return false">Start over</a>` : ""}</div>` + steps[i]();
   document.getElementById("back").style.visibility = i === 0 ? "hidden" : "visible";
   document.getElementById("next").textContent = i === steps.length - 1 ? "Finish" : "Next";
   for (const k of ["tradier", "telegram"]) {
