@@ -80,7 +80,7 @@ async function copyText(txt, okMsg) {
   ta.setSelectionRange(0, txt.length);
   try { document.execCommand("copy"); flash(okMsg); } catch (e) { flash("Select all the text in the box, then copy it."); }
 }
-function copyCode() { copyText(setupCode(), "Copied! Now paste it to Joey in Telegram, then press Next."); }
+function copyCode() { copyText(setupCode(), "Copied! Now paste it to Joey in Signal, then press Next."); }
 async function shareCode() { const c = setupCode(); if (navigator.share) { try { await navigator.share({ text: c }); flash("Sent? Then press Next."); return; } catch (e) {} } copyCode(); }
 async function checkTelegram() {
   const tok = S("telegram").trim(), m = document.getElementById("telegram_msg");
@@ -152,7 +152,7 @@ const steps = [
   <div class="card">${tokensOk() ? `<p>This code holds your two keys. Joey uses it to start your bot on his server. Send it only to him, never anywhere public.</p>
   <button class="btn" onclick="shareCode()">Send setup code to Joey</button>
   <button class="btn sec" onclick="copyCode()">Or just copy it</button>
-  <p id="flash" class="small">Tap the green button and pick Joey's chat in Telegram (or copy it and paste it to him). Then press Next.</p>
+  <p id="flash" class="small">Tap the green button, pick Signal, then Joey's chat (or copy it and paste it to him in Signal). Then press Next.</p>
   <textarea id="scriptbox" style="display:none" readonly></textarea>`
   : (KEY_BLOB || DEPLOY_KEY.includes("PRIVATE KEY")) ? `<p class="bad">Go back and fill in both keys first.</p>` : `<p class="bad">This page was opened without its full link. Tap the original link you were sent again (the whole thing, it is long).</p>`}</div>`,
 
