@@ -11,6 +11,7 @@
   .wrap { max-width:560px; margin:0 auto; padding:16px 16px 120px; }
   .prog { color:var(--mut); font-size:15px; margin-bottom:8px; }
   h1 { font-size:26px; margin:0 0 12px; line-height:1.25; }
+  h2 { font-size:19px; margin:18px 0 6px; }
   p { margin:0 0 14px; }
   .card { background:var(--card); border-radius:14px; padding:16px; margin:0 0 14px; }
   .num { display:inline-block; background:var(--acc); color:#000; font-weight:700; border-radius:999px; min-width:30px; height:30px; line-height:30px; text-align:center; margin-right:8px; }
@@ -120,11 +121,27 @@ const steps = [
   <p class="small">Your answers are saved on this phone, so you can close this page and come back.</p>`,
 
  () => `<h1>1. Open a Tradier account</h1>
-  <div class="card"><p>Tradier is the broker the bot trades in. If you already have one, press Next.</p>
-  <div class="step"><span class="num">1</span><span>Go to <a href="https://tradier.com" target="_blank">tradier.com</a> and tap <b>Open an account</b>.</span></div>
-  <div class="step"><span class="num">2</span><span>Choose an <b>Individual</b> account and pick <b>Margin</b> when asked (not Cash).</span></div>
-  <div class="step"><span class="num">3</span><span>Either plan works. <b>Lite</b> is free but charges $0.35 per trade; <b>Pro</b> is $10/month with $0 trades. The bot makes roughly 100 to 150 trades a year.</span></div>
-  <div class="step"><span class="num">4</span><span>Wait for the approval email, then deposit the money the bot may use. It uses the whole account. $1,000 is fine; below $2,000 it never borrows.</span></div></div>`,
+  <div class="card"><p>Tradier is the broker the bot trades in. Already have an approved, funded Tradier account? Press Next.</p>
+  <p>This is the longest step: about 15 minutes to apply, then 1 to 3 business days for approval and your deposit. You can close this page and come back; everything you typed here is saved.</p>
+  <p><b>Have ready:</b> your Social Security number, a photo ID (driver's license), your home address, your job and employer, and your bank login (to connect your bank later).</p>
+  <h2>A. Apply</h2>
+  <div class="step"><span class="num">1</span><span>Open <a href="https://tradier.com/signup" target="_blank">tradier.com/signup</a> (or tradier.com and tap <b>Sign Up</b> at the top right).</span></div>
+  <div class="step"><span class="num">2</span><span>Pick a plan. <b>Lite</b> is free but charges $0.35 per stock trade; <b>Pro</b> is $10/month with $0 trades. The bot makes roughly 100 to 150 trades a year, so either is fine. You can change it later.</span></div>
+  <div class="step"><span class="num">3</span><span>Make your login: email and a password. Write the password down. Tradier emails you a code to confirm the email; type it in.</span></div>
+  <div class="step"><span class="num">4</span><span>Account type: <b>Individual</b>. When it asks Cash or Margin, pick <b>Margin</b>.</span></div>
+  <div class="step"><span class="num">5</span><span>Fill in the personal pages: legal name, date of birth, Social Security number, citizenship, home address, phone, and employment (employer name, or retired / not employed).</span></div>
+  <div class="step"><span class="num">6</span><span>Financial pages: yearly income, net worth, liquid net worth. Answer honestly; ranges are fine.</span></div>
+  <div class="step"><span class="num">7</span><span>Investment experience and goals: pick your real experience with <b>stocks</b>. For the goal, <b>Growth</b> or <b>Speculation</b> fits a trading bot. If it asks about margin experience, answer honestly. Low experience can mean Tradier approves Cash only; the bot still works then, it just never borrows.</span></div>
+  <div class="step"><span class="num">8</span><span>Questions about being a broker employee, a company director or a public official: for most people the answer is <b>No</b> to all.</span></div>
+  <div class="step"><span class="num">9</span><span>If it asks, upload a photo of your ID (and sometimes a bill for proof of address). A clear phone photo is fine.</span></div>
+  <div class="step"><span class="num">10</span><span>Read and accept the agreements (e-sign with your name), then tap <b>Submit</b>.</span></div>
+  <h2>B. Wait for approval</h2>
+  <div class="step"><span class="num">11</span><span>Tradier emails you, usually within 1 to 2 business days. If they ask for more documents, reply to that email. Nothing works until you get the <b>approved</b> email.</span></div>
+  <h2>C. Put money in</h2>
+  <div class="step"><span class="num">12</span><span>Sign in at <a href="https://web.tradier.com" target="_blank">web.tradier.com</a>. On the dashboard find <b>Transfer</b> / <b>Deposit funds</b>, and connect your bank (it opens <b>Plaid</b>: pick your bank and sign in to it).</span></div>
+  <div class="step"><span class="num">13</span><span>Deposit the money the bot may use. <b>The bot uses the whole account.</b> $1,000 is fine; below $2,000 it never borrows. A bank transfer takes a few business days to arrive.</span></div>
+  <div class="step"><span class="num">14</span><span>If Tradier shows a <b>market data agreement</b> when you sign in, answer that you are a <b>non-professional</b> and accept it. The bot needs live prices.</span></div>
+  <p class="small">You don't have to wait for the money to arrive. Once you're approved, press Next and keep going.</p></div>`,
 
  () => `<h1>2. Copy your Tradier key</h1>
   <div class="card"><p>The bot needs a key (a long code) to trade in your account.</p>
