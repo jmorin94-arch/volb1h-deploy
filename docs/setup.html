@@ -170,7 +170,7 @@ const BUILD = {
     <p><b>2.</b> Then open Oracle:</p>
     <a class="btn" href="${DEPLOY_URL}" target="_blank" onclick="W('deployed','1'); setNext()">Build my server</a>
     <p>In Oracle:</p>
-    <ol><li>Sign in.</li><li>Tick <b>I accept</b> → <b>Next</b> (very bottom of the page).</li><li>The <b>Setup code</b> box is on the next page. Don't see it? Tap <b>Configure variables</b> in the list at the top left.</li>${shot("rm_variables")}<li>Tap the <b>Setup code</b> box → <b>Paste</b> → <b>Next</b>.</li><li>Tick <b>Run apply</b> → <b>Create</b>.</li><li>Wait for green <b>SUCCEEDED</b> (~5 min), then come back.</li></ol>
+    <ol><li>Sign in.</li><li>Tick <b>I accept</b>.</li><li>In the list at the top left, tap <b>Configure variables</b> (the 2nd line). That opens the page with the <b>Setup code</b> box:</li>${shot("rm_variables")}<li>Tap the <b>Setup code</b> box → <b>Paste</b> → <b>Next</b>.</li><li>Tick <b>Run apply</b> → <b>Create</b>.</li><li>Wait for green <b>SUCCEEDED</b> (~5 min), then come back.</li></ol>
     ${help("Show me", shot("rm_welcome") + shot("rm_review") + shot("rm_succeeded") +
       `<p>"Out of capacity" error? Oracle is busy. In an hour, open the stack and tap <b>Apply</b> again.</p>`)}`,
 };
