@@ -35,7 +35,7 @@ variables:
     default: "VM.Standard.E2.1.Micro"
   availability_domain_index:
     type: number
-    default: 0
+    default: -1
   ssh_public_key:
     type: string
     default: ""

@@ -19,8 +19,10 @@ variable "setup_code" {
 variable "shape" {
   default = "VM.Standard.E2.1.Micro"
 }
+# -1 = automatic: the first availability domain that offers `shape` (Ashburn has 3 ADs and the Always Free
+# micro shape lives in only one of them). 0/1/2 forces that AD.
 variable "availability_domain_index" {
-  default = 0
+  default = -1
 }
 # Support only: leave empty for the sealed box the setup page describes. A public key here opens SSH (port 22).
 variable "ssh_public_key" {
@@ -77,6 +79,19 @@ locals {
 
 data "oci_identity_availability_domains" "ads" {
   compartment_id = var.tenancy_ocid
+}
+
+data "oci_core_shapes" "per_ad" {
+  count               = length(data.oci_identity_availability_domains.ads.availability_domains)
+  compartment_id      = var.compartment_ocid
+  availability_domain = data.oci_identity_availability_domains.ads.availability_domains[count.index].name
+}
+
+locals {
+  ad_names       = [for a in data.oci_identity_availability_domains.ads.availability_domains : a.name]
+  ads_with_shape = [for i, n in local.ad_names : n if contains([for s in data.oci_core_shapes.per_ad[i].shapes : s.name], var.shape)]
+  ad = (var.availability_domain_index >= 0 ? local.ad_names[var.availability_domain_index] :
+        length(local.ads_with_shape) > 0 ? local.ads_with_shape[0] : local.ad_names[0])
 }
 
 data "oci_core_images" "ubuntu" {
@@ -146,7 +161,7 @@ resource "oci_core_subnet" "subnet" {
 
 resource "oci_core_instance" "bot" {
   compartment_id      = var.compartment_ocid
-  availability_domain = data.oci_identity_availability_domains.ads.availability_domains[var.availability_domain_index].name
+  availability_domain = local.ad
   display_name        = "volb1h"
   shape               = var.shape
 
