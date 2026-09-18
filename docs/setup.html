@@ -111,12 +111,11 @@ function input(k, label) {
   return `<div class="row"><input id="${k}" placeholder="${label}" autocomplete="off" autocapitalize="off" spellcheck="false" value="${S(k).replace(/"/g, "")}">
     <button class="btn sec" onclick="pasteInto('${k}')">Paste</button></div><div class="msg" id="${k}_msg"></div>`;
 }
-async function deploy() {
-  if (DEMO) { document.getElementById("deploy_msg").innerHTML = '<span class="ok">✓ Code copied. Oracle would open now. (test)</span>'; return; }
+async function copyCode() {
+  if (DEMO) { document.getElementById("deploy_msg").innerHTML = '<span class="ok">✓ Code copied. (test)</span>'; return; }
   const ok = await copy(setupCode());
-  document.getElementById("deploy_msg").innerHTML = ok ? '<span class="ok">✓ Code copied. Oracle is opening…</span>' : '<span class="bad">Copy failed — use the box below.</span>';
-  if (!ok) { const t = document.getElementById("codebox"); t.style.display = "block"; t.value = setupCode(); }
-  W("deployed", "1"); setNext();
+  document.getElementById("deploy_msg").innerHTML = ok ? '<span class="ok">✓ Code copied. Now tap Build my server.</span>'
+    : '<span class="bad">Couldn\'t copy — press and hold the code below → Select All → Copy.</span>';
 }
 async function sendToJoey() {
   if (DEMO) { document.getElementById("send_msg").innerHTML = '<span class="ok">✓ Share menu would open now. (test)</span>'; return; }
@@ -164,8 +163,12 @@ const ORACLE = {
 const BUILD = {
   ready: () => !!S("deployed"),
   body: () => `<h1>Build your server</h1>
-    <a class="btn" href="${DEPLOY_URL}" target="_blank" onclick="deploy()">Build my server</a><div class="msg" id="deploy_msg"></div>
-    <textarea id="codebox" style="display:none" readonly></textarea>
+    <p><b>1.</b> Copy your setup code:</p>
+    <button class="btn" onclick="copyCode()">Copy my setup code</button><div class="msg" id="deploy_msg"></div>
+    <textarea id="codebox" readonly rows="3" style="width:100%;font-size:11px" onclick="this.select()">${setupCode()}</textarea>
+    <p class="small">Didn't copy? Press and hold the code above → <b>Select All</b> → <b>Copy</b>.</p>
+    <p><b>2.</b> Then open Oracle:</p>
+    <a class="btn" href="${DEPLOY_URL}" target="_blank" onclick="W('deployed','1'); setNext()">Build my server</a>
     <p>In Oracle:</p>
     <ol><li>Sign in.</li><li>Tick <b>I accept</b> → <b>Next</b>.</li><li>Tap the <b>Setup code</b> box → <b>Paste</b> → <b>Next</b>.</li><li>Tick <b>Run apply</b> → <b>Create</b>.</li><li>Wait for green <b>SUCCEEDED</b> (~5 min), then come back.</li></ol>
     ${help("Show me", shot("rm_welcome") + shot("rm_variables") + shot("rm_review") + shot("rm_succeeded") +
@@ -205,7 +208,7 @@ function render() {
   const dots = steps.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
   const banner = DEMO ? `<p style="background:#ffb020;color:#000;border-radius:10px;padding:8px 12px;font-weight:700">TEST MODE — buttons don't do anything real</p>` : "";
   let body = steps[i].body();
-  if (DEMO) body = body.replace(/<a class="btn" href="[^"]*" target="_blank"( onclick="deploy\(\)")?>/g, (m, d) => `<a class="btn" href="#" onclick="${d ? "deploy();" : ""}return false">`);
+  if (DEMO) body = body.replace(/<a class="btn" href="[^"]*" target="_blank"(?: onclick="([^"]*)")?>/g, (m, d) => `<a class="btn" href="#" onclick="${d ? d + ";" : ""}return false">`);
   document.getElementById("app").innerHTML = banner + `<div class="dots">${dots}</div>` + body +
     (i > 0 ? `<p class="small" style="margin-top:24px"><a href="#" onclick="startOver();return false">Start over</a></p>` : "");
   document.getElementById("back").style.visibility = i === 0 ? "hidden" : "visible";
