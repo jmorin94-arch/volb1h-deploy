@@ -172,7 +172,7 @@ const BUILD = {
     <p>In Oracle:</p>
     <ol><li>Sign in.</li><li>Tick <b>I accept</b>.</li><li>In the list at the top left, tap <b>Configure variables</b> (the 2nd line). That opens the page with the <b>Setup code</b> box:</li>${shot("rm_variables")}<li>Tap the <b>Setup code</b> box → <b>Paste</b> → <b>Next</b>.</li><li>Tick <b>Run apply</b> → <b>Create</b>.</li><li>Wait for green <b>SUCCEEDED</b> (~5 min), then come back.</li></ol>
     ${help("Show me", shot("rm_welcome") + shot("rm_review") + shot("rm_succeeded") +
-      `<p>"Out of capacity" error? Oracle is busy. In an hour, open the stack and tap <b>Apply</b> again.</p>`)}`,
+      `<p><b>FAILED with "404" / "not authorized or not found"?</b> Your Oracle account is brand new and still being set up behind the scenes (this takes a few hours, sometimes until the next morning). Nothing is wrong. Wait, then in Oracle go to <b>Menu → Resource Manager → Stacks</b>, open the stack and tap <b>Apply</b>.</p><p>"Out of capacity" error? Oracle is busy. In an hour, open the stack and tap <b>Apply</b> again.</p>`)}`,
 };
 const SEND = {
   ready: () => !!S("sent"),
