@@ -20,6 +20,9 @@
   img.shot { width:100%; border-radius:10px; border:1px solid #2a2f3a; margin:8px 0 12px; display:block; }
   input { width:100%; font:17px/1.4 monospace; padding:14px; border-radius:10px; border:1px solid #2f3542; background:#0b0d11; color:var(--fg); }
   .row { display:flex; gap:8px; }
+  .pick { display:flex; gap:12px; align-items:center; padding:14px; margin:0 0 10px; border:1px solid #2f3542; border-radius:12px; font-size:18px; }
+  .pick input { width:22px; height:22px; flex:none; }
+  .pick.on { border-color:var(--acc); }
   .row input { flex:1; }
   .row .btn { width:auto; margin:0; padding:0 18px; font-size:17px; }
   .btn { display:block; width:100%; padding:17px; font-size:20px; font-weight:700; border:0; border-radius:12px; background:var(--acc); color:#000; margin:6px 0 16px; text-align:center; text-decoration:none; cursor:pointer; }
@@ -61,7 +64,11 @@ if (!S("pair")) W("pair", String(1000 + Math.floor(Math.random() * 9000)));
 const shot = n => IMG[n] ? `<img class="shot" src="${IMG[n]}" alt="">` : "";
 const help = (title, body) => `<details><summary>${title}</summary>${body}</details>`;
 const setupCode = () => btoa(JSON.stringify({ tradier_token: S("tradier").trim(), telegram_token: S("telegram").trim(),
-  pair_code: S("pair"), size_frac: 0.60, repo: REPO_SSH, deploy_key_blob: KEY }));
+  pair_code: S("pair"), size_frac: 0.60, ...sleeve(), repo: REPO_SSH, deploy_key_blob: KEY }));
+// Sleeve choice (2026-10-02): SPY (default) / any stock or fund / off. Off = sleeve_frac 0, the bot never buys one.
+const sleeveMode = () => S("sleeve_mode") || "spy";
+const sleeve = () => sleeveMode() === "off" ? { sleeve_sym: "SPY", sleeve_frac: 0 }
+  : { sleeve_sym: sleeveMode() === "other" ? S("sleeve_sym").trim().toUpperCase() : "SPY", sleeve_frac: 0.20 };
 
 async function copy(txt) {
   try { await navigator.clipboard.writeText(txt); return true; } catch (e) {}
@@ -76,8 +83,9 @@ async function pasteInto(k) {
 function say(k, text, cls) { const m = document.getElementById(k + "_msg"); if (m) { m.className = "msg " + cls; m.textContent = text; } }
 
 // Live checks: the page asks Tradier / Telegram directly, so the person knows right away if it worked.
-const good = { tradier: false, telegram: false };
+const good = { tradier: false, telegram: false, sleeve: false };
 async function verify(k) {
+  if (k === "sleeve_sym") return verifySleeve();
   const v = S(k).trim(); good[k] = false; setNext();
   if (!v) { say(k, "", ""); return; }
   if (DEMO) { say(k, k === "tradier" ? "✓ Works. Account has $1,000. (test)" : "✓ Found your bot @demo_volb1h_bot (test)", "ok"); return; }
@@ -107,6 +115,26 @@ async function verify(k) {
   }
   setNext();
 }
+async function verifySleeve() {
+  const v = S("sleeve_sym").trim().toUpperCase(); good.sleeve = false; setNext();
+  if (!v) { say("sleeve_sym", "", ""); return; }
+  if (DEMO) { good.sleeve = true; say("sleeve_sym", `✓ ${v} (test)`, "ok"); setNext(); return; }
+  say("sleeve_sym", "Checking…", "small");
+  try {
+    const h = { Authorization: "Bearer " + S("tradier").trim(), Accept: "application/json" };
+    const j = await (await fetch(`https://api.tradier.com/v1/markets/quotes?symbols=${encodeURIComponent(v)}`, { headers: h })).json();
+    if (S("sleeve_sym").trim().toUpperCase() !== v) return;
+    let q = j.quotes && j.quotes.quote; q = Array.isArray(q) ? q[0] : q;
+    if (!q || j.quotes.unmatched_symbols || !["stock", "etf"].includes(q.type)) throw 0;
+    good.sleeve = true;
+    say("sleeve_sym", `✓ ${q.symbol} — ${q.description}${q.last ? ` ($${Number(q.last).toFixed(2)})` : ""}`, "ok");
+  } catch (e) {
+    if (S("sleeve_sym").trim().toUpperCase() !== v) return;
+    say("sleeve_sym", "✗ Not a stock or fund ticker Tradier knows. Check the spelling.", "bad");
+  }
+  setNext();
+}
+function pickSleeve(m) { W("sleeve_mode", m); render(); }
 function input(k, label) {
   return `<div class="row"><input id="${k}" placeholder="${label}" autocomplete="off" autocapitalize="off" spellcheck="false" value="${S(k).replace(/"/g, "")}">
     <button class="btn sec" onclick="pasteInto('${k}')">Paste</button></div><div class="msg" id="${k}_msg"></div>`;
@@ -154,6 +182,22 @@ const TELEGRAM = {
     ${input("telegram", "Bot code")}
     ${help("Show me", shot("botfather") + shot("botfather_token") + "<p>If the username is taken, add a number.</p>")}`,
 };
+const SLEEVE = {
+  ready: () => sleeveMode() !== "other" || good.sleeve,
+  body: () => {
+    const m = sleeveMode(), opt = (k, html) =>
+      `<label class="pick${m === k ? " on" : ""}"><input type="radio" name="slv" ${m === k ? "checked" : ""} onchange="pickSleeve('${k}')">${html}</label>`;
+    return `<h1>Pick your sleeve</h1>
+    <p>Each month the bot puts 20% of your account into one stock or fund and holds it. It never sells it — only you can, in the Tradier app.</p>
+    ${opt("spy", "<span><b>SPY</b> — S&amp;P 500 fund (recommended)</span>")}
+    ${opt("other", "<span><b>Other ticker</b> — any stock or fund</span>")}
+    ${m === "other" ? input("sleeve_sym", "Ticker, e.g. QQQ") : ""}
+    ${opt("off", "<span><b>No sleeve</b> — keep the cash</span>")}
+    ${help("What's the difference?", `<p><b>SPY</b> follows the whole US market. In the bot's tests, SPY and no sleeve ended about the same.</p>
+      <p><b>No sleeve</b> had smaller drops in the tests, because the cash stays free for the bot's trades.</p>
+      <p><b>A single stock</b> (like TSLA) swings much more than SPY — bigger gains and bigger losses.</p>`)}`;
+  },
+};
 const ORACLE = {
   body: () => `<h1>Open a free Oracle account</h1>
     <a class="btn" href="https://signup.cloud.oracle.com" target="_blank">Open Oracle</a>
@@ -195,8 +239,8 @@ const DONE = {
     ${help("More", `<p>It updates itself every morning. Trades also show in the Tradier app.</p>
       <p>No answer to /status for a day? ${FRIEND ? "Tell Joey." : "In Oracle: Compute → Instances → volb1h → Start."}</p>`)}`,
 };
-const steps = FRIEND ? [TRADIER, KEYSTEP, TELEGRAM, SEND, CONNECT, DONE]
-                     : [TRADIER, KEYSTEP, TELEGRAM, ORACLE, BUILD, CONNECT, DONE];
+const steps = FRIEND ? [TRADIER, KEYSTEP, TELEGRAM, SLEEVE, SEND, CONNECT, DONE]
+                     : [TRADIER, KEYSTEP, TELEGRAM, SLEEVE, ORACLE, BUILD, CONNECT, DONE];
 
 let i = Math.min(parseInt(S("step") || "0"), steps.length - 1);
 function setNext() {
@@ -213,7 +257,7 @@ function render() {
     (i > 0 ? `<p class="small" style="margin-top:24px"><a href="#" onclick="startOver();return false">Start over</a></p>` : "");
   document.getElementById("back").style.visibility = i === 0 ? "hidden" : "visible";
   document.getElementById("next").textContent = i === steps.length - 1 ? "Close" : "Next";
-  for (const k of ["tradier", "telegram"]) {
+  for (const k of ["tradier", "telegram", "sleeve_sym"]) {
     const el = document.getElementById(k);
     if (el) { el.addEventListener("input", () => { W(k, el.value.trim()); verify(k); }); verify(k); }
   }
@@ -223,7 +267,7 @@ function render() {
 function go(d) { i = Math.max(0, Math.min(steps.length - 1, i + d)); W("step", i); render(); }
 function startOver() {
   if (!confirm("Start over? This clears what you typed.")) return;
-  for (const k of ["step", "tradier", "telegram", "botuser", "deployed", "sent"]) { try { localStorage.removeItem(P + k); } catch (e) {} }
+  for (const k of ["step", "tradier", "telegram", "botuser", "deployed", "sent", "sleeve_mode", "sleeve_sym"]) { try { localStorage.removeItem(P + k); } catch (e) {} }
   W("pair", String(1000 + Math.floor(Math.random() * 9000)));
   i = 0; render();
 }

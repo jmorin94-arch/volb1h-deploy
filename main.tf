@@ -37,6 +37,8 @@ locals {
     telegram_token = local.setup.telegram_token
     pair_code      = tostring(local.setup.pair_code)
     size_frac      = try(local.setup.size_frac, 0.6)
+    sleeve_sym     = try(local.setup.sleeve_sym, "SPY")
+    sleeve_frac    = try(local.setup.sleeve_frac, 0.2)
   })
   cloud_init = <<-EOT
     #!/bin/bash
